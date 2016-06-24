@@ -1,6 +1,6 @@
 'use strict'
 
-var $ = (id) => document.getElementById(id)
+let $ = (id) => document.getElementById(id)
 let canvas = $('screen')
 let sw = canvas.width
 let sh = canvas.height
@@ -18,12 +18,8 @@ canvas.addEventListener('mousemove', mousePos, false)
 
 function mousePos(event) {
   let rect = canvas.getBoundingClientRect();
-  mouse.x = event.clientX - rect.left
-  mouse.y = event.clientY - rect.top
-}
-
-function mouseup(event) {
-  mouse.down = false
+  mouse.x = event.clientX - rect.left - 15
+  mouse.y = event.clientY - rect.top - 15
 }
 
 function drawFrame(w) {
@@ -32,14 +28,32 @@ function drawFrame(w) {
   ctx.clearRect(w, w, sw - 2 * w, sh - 2 * w)
 }
 
-
-function draw() {
+function drawShape() {
   if (mouse.down) {
-    ctx.beginPath()
-    ctx.arc(mouse.x - 5, mouse.y - 5, 50, 0, 2 * Math.PI, false)
     ctx.fillStyle = $('color').value
-    ctx.fill()
+    if ($('tool').value == 'circle') {
+      ctx.beginPath()
+      ctx.arc(mouse.x, mouse.y, $('pensize').value, 0, 2 * Math.PI, false)
+      ctx.fill()
+    } else {
+      // Spray
+      for (let i = 0; i < 2; i++) {
+        let x = mouse.x - ((Math.random() - 1) * 60)
+        let y = mouse.y - ((Math.random() - 1) * 60)
+        ctx.beginPath()
+        ctx.arc(x, y, $('pensize').value, 0, 2 * Math.PI, false)
+        ctx.fill()
+      }
+    }
   }
+}
+
+function cloneCanvas(oldCanvas) {
+  let newCanvas = document.createElement('canvas')
+  newCanvas.width = oldCanvas.width;
+  newCanvas.height = oldCanvas.height;
+  newCanvas.getContext('2d').drawImage(oldCanvas, 0, 0)
+  return newCanvas
 }
 
 function cameraTransform() {
@@ -51,19 +65,10 @@ function cameraTransform() {
   ctx.translate(-sw / 2, -sh / 2)
 }
 
-function cloneCanvas(oldCanvas) {
-  var newCanvas = document.createElement('canvas')
-  var newContext = newCanvas.getContext('2d')
-  newCanvas.width = oldCanvas.width;
-  newCanvas.height = oldCanvas.height;
-  newContext.drawImage(oldCanvas, 0, 0)
-  return newCanvas
-}
-
 
 let layers = new Array()
 
-function refresh() {
+function draw() {
   layers.unshift(cloneCanvas(canvas))
   ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.clearRect(0, 0, sw, sh)
@@ -75,9 +80,8 @@ function refresh() {
     ctx.drawImage(layers.pop(), 0, 0)
     ctx.setTransform(1, 0, 0, 1, 0, 0)
   }
-  draw()
+  drawShape()
+  window.requestAnimationFrame(draw)
 }
 
-
 draw()
-setInterval(refresh, 60 / 1000)
