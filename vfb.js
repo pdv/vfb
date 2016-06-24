@@ -14,13 +14,14 @@ let mouse = {
 
 canvas.addEventListener('mousedown', (e) => { mouse.down = true }, false)
 canvas.addEventListener('mouseup', (e) => { mouse.down = false }, false)
-canvas.addEventListener('mousemove', mousePos, false)
+canvas.addEventListener('mousemove', (e) => {
+  let rect = canvas.getBoundingClientRect()
+  mouse.x = e.clientX - rect.left - 15
+  mouse.y = e.clientY - rect.top - 15
+}, false)
 
-function mousePos(event) {
-  let rect = canvas.getBoundingClientRect();
-  mouse.x = event.clientX - rect.left - 15
-  mouse.y = event.clientY - rect.top - 15
-}
+
+// Drawing functions
 
 function drawFrame(w) {
   ctx.fillStyle = '#222'
@@ -48,6 +49,9 @@ function drawShape() {
   }
 }
 
+
+// Capture and transform
+
 function cloneCanvas(oldCanvas) {
   let newCanvas = document.createElement('canvas')
   newCanvas.width = oldCanvas.width;
@@ -65,6 +69,8 @@ function cameraTransform() {
   ctx.translate(-sw / 2, -sh / 2)
 }
 
+
+// Draw loop
 
 let layers = new Array()
 
